@@ -1,38 +1,44 @@
 name: Azure Static Web Apps CI/CD
 
 on:
+  # Trigger on push to main branch
   push:
     branches:
       - main
+  # Trigger on pull request events to main branch
   pull_request:
     types: [opened, synchronize, reopened, closed]
     branches:
       - main
 
 jobs:
+  # Job to build and deploy the static web app when push to main happens
   build_and_deploy_job:
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
     runs-on: ubuntu-latest
     name: Build and Deploy Job
     steps:
+      # Step to check out the repository
       - uses: actions/checkout@v3
         with:
-          submodules: true
-          lfs: false
+          submodules: true  # Ensure submodules are pulled if required
+          lfs: false  # Skip Git LFS if not needed
+
+      # Step to build and deploy to Azure Static Web Apps
       - name: Build And Deploy
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_LEMON_SEA_0EEE18B0F }}
-          repo_token: ${{ secrets.GITHUB_TOKEN }} # Used for Github integrations (i.e. PR comments)
-          action: "upload"
-          ###### Repository/Build Configurations - These values can be configured to match your app requirements. ######
-          # For more information regarding Static Web App workflow configurations, please visit: https://aka.ms/swaworkflowconfig
-          app_location: "/" # App source code path
-          api_location: "" # Api source code path - optional
-          output_location: "build" # Built app content directory - optional
-          ###### End of Repository/Build Configurations ######
-
+          repo_token: ${{ secrets.GITHUB_TOKEN }} # Used for PR comment interactions
+          action: "upload"  # Upload content to Azure Static Web App
+          # Repository/Build Configurations - Adjust these values per your app setup
+          app_location: "/"  # Path to your app source code
+          api_location: ""   # If you have an API, specify its location (optional)
+          output_location: "build"  # Path where the built app content is stored
+          # If you have specific routing rules, build settings, or additional environment configurations, define them here.
+      
+  # Optional job to handle actions when a pull request is closed
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
     runs-on: ubuntu-latest
@@ -43,4 +49,4 @@ jobs:
         uses: Azure/static-web-apps-deploy@v1
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_LEMON_SEA_0EEE18B0F }}
-          action: "close"
+          action: "close"  # This stops the deployment for the PR. Generally useful for managing app preview URLs.
